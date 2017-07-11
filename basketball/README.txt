@@ -1,1 +1,1 @@
-test
+This repository contains player data from all active players in the 2016-2017 NBA season 
