@@ -1,8 +1,10 @@
 from urllib.request import urlopen
-from bs4 import BeautifulSoup, Comment
-import pprint
+
 import pandas as pd
-from get_team import team
+from bs4 import BeautifulSoup
+
+from basketball.get_team import team
+
 
 def file_maker(playerName):
 
