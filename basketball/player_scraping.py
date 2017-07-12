@@ -3,7 +3,6 @@ from urllib.request import urlopen
 import pandas as pd
 from bs4 import BeautifulSoup
 
-from basketball.get_team import team
 
 
 def file_maker(playerName):
@@ -12,7 +11,7 @@ def file_maker(playerName):
 
     def name_converter(string):
         name = string.split()
-        return name[1][0] + "/" + name[1][:5] + name[0][:2] + "02.html"
+        return name[1][0] + "/" + name[1][:5] + name[0][:2] + "01.html"
 
     url = 'http://www.basketball-reference.com/players/' + name_converter(player)
     print (player)
@@ -54,10 +53,9 @@ def file_maker(playerName):
 
 
 
-
+"""
 for player in team('http://www.basketball-reference.com/teams/PHO/2017.html'):
     file_maker(player)
 
 """
-file_maker("Derrick Jones")
-"""
+file_maker("Dell Curry")
