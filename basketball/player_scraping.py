@@ -56,4 +56,4 @@ for player in team('http://www.basketball-reference.com/teams/PHO/2017.html'):
     file_maker(player)
 
 """
-file_maker("Dell Curry")
+file_maker("Steph Curry")
