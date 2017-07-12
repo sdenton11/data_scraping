@@ -1,5 +1,4 @@
 from urllib.request import urlopen
-
 import pandas as pd
 from bs4 import BeautifulSoup
 
@@ -18,7 +17,7 @@ def file_maker(playerName):
     print(url)
     html = urlopen(url)
 
-    soup = BeautifulSoup(html)
+    soup = BeautifulSoup(html, "lxml")
 
     column_headers = [th.getText() for th
                       in soup.findAll('tr', limit = 2)[0].findAll('th')]
@@ -31,9 +30,8 @@ def file_maker(playerName):
 
     per_game_df = pd.DataFrame(player_data, columns=column_headers[1:])
 
-    per_game_df = per_game_df.convert_objects(convert_numeric=True)
-
-    print (per_game_df)
+    for column in per_game_df:
+        per_game_df[column] = pd.to_numeric(per_game_df[column], errors='ignore')
 
     per_game_df['OFF'] = per_game_df['ORB'] + 2 * per_game_df['AST']\
                          + per_game_df['PTS'] - per_game_df['TOV']
