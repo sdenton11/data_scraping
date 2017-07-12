@@ -1,9 +1,7 @@
 from urllib.request import urlopen
-
 import pandas as pd
 from bs4 import BeautifulSoup
 
-from basketball.get_team import team
 
 
 def file_maker(playerName):
@@ -12,14 +10,14 @@ def file_maker(playerName):
 
     def name_converter(string):
         name = string.split()
-        return name[1][0] + "/" + name[1][:5] + name[0][:2] + "02.html"
+        return name[1][0] + "/" + name[1][:5] + name[0][:2] + "01.html"
 
     url = 'http://www.basketball-reference.com/players/' + name_converter(player)
     print (player)
     print(url)
     html = urlopen(url)
 
-    soup = BeautifulSoup(html)
+    soup = BeautifulSoup(html, "lxml")
 
     column_headers = [th.getText() for th
                       in soup.findAll('tr', limit = 2)[0].findAll('th')]
@@ -32,9 +30,8 @@ def file_maker(playerName):
 
     per_game_df = pd.DataFrame(player_data, columns=column_headers[1:])
 
-    per_game_df = per_game_df.convert_objects(convert_numeric=True)
-
-    print (per_game_df)
+    for column in per_game_df:
+        per_game_df[column] = pd.to_numeric(per_game_df[column], errors='ignore')
 
     per_game_df['OFF'] = per_game_df['ORB'] + 2 * per_game_df['AST']\
                          + per_game_df['PTS'] - per_game_df['TOV']
@@ -54,10 +51,9 @@ def file_maker(playerName):
 
 
 
-
+"""
 for player in team('http://www.basketball-reference.com/teams/PHO/2017.html'):
     file_maker(player)
 
 """
-file_maker("Derrick Jones")
-"""
+file_maker("Steph Curry")

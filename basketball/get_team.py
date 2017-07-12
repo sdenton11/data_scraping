@@ -7,7 +7,7 @@ def team(name):
     url = name
     html = urlopen(url)
 
-    soup = BeautifulSoup(html)
+    soup = BeautifulSoup(html, "lxml")
 
     column_headers = [th.getText() for th
                       in soup.findAll('tr', limit = 2)[0].findAll('th')]
