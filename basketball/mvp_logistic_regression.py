@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import statsmodels.api as sm
 
-df = pd.read_csv('/Users/samdenton/github/data_scraping/basketball/mvp_totals_2017.csv',
+df = pd.read_csv('../basketball/mvp_totals_2017.csv',
                         encoding='latin-1')
 
 log_df = df[['MVP', 'AST%', 'BLK%', 'DRB%', 'ORB%', 'TOV%', 'eFG%']]
