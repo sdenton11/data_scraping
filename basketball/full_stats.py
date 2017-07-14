@@ -54,7 +54,7 @@ def get_full_stats(link):
 
     #iterate through the rest of the tables to add and merge them
     for table in tables[1:4]:
-        full_df = pd.merge(full_df, create_df(table), on='Season', how='outer')
+        full_df = pd.merge(full_df, create_df(table), copy=False, how = 'left')
 
 
     full_df = full_df.T.drop_duplicates().T
@@ -66,6 +66,7 @@ def get_full_stats(link):
                                                  "FG%_x": "FG%",
                                                  "3P%_x": "3P%",
                                                  "FT%_x": "FT%"})
+    full_df['MVP'] = full_df['Season'].map(lambda x: 1 if '★' in x else 0)
 
     return (full_df)
 
@@ -82,9 +83,17 @@ print (players)
 links = [[a['href'] for a in players[i].findAll('a', href=True)]
          for i in range(len(players))]
 
+
 # iterate throuch each link in the links
+mvp = []
 for link in links[1:]:
     direct = link[0]
 
     df = get_full_stats(direct)
-    df.to_csv('./players_advanced_stats/%s.csv'%direct.split("/")[2])
+    df['name'] = direct.split("/")[2]
+    mvp.append(df)
+
+mvp_df = pd.concat(mvp)
+mvp_df = mvp_df.sort_values('MVP', ascending=False)
+
+mvp_df.to_csv('mvp_totals_2017.csv')
