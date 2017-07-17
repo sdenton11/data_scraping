@@ -37,14 +37,14 @@ print (np.exp(result.params))
 
 # logistic regression using sklearn
 # First formalize the dataframe in a way that will work
-log_2df = df[['MVP', 'AST%', 'Win %', 'TRB/G', 'PTS/G', 'WS', 'name']]
+log_2df = df[['MVP', 'AST%', 'Win %', 'DWS', 'TRB/G', 'PTS/G', 'WS', 'name']]
 
 log_2df['AST_pct'] = log_2df['AST%']
 log_2df['Win_pct'] = log_2df['Win %']
 log_2df['reb_g'] = log_2df['TRB/G']
 log_2df['pts_g'] = log_2df['PTS/G']
 
-log_2df = log_2df[['MVP', 'AST_pct', 'Win_pct', 'reb_g', 'pts_g', 'WS', 'name']]
+log_2df = log_2df[['MVP', 'AST_pct', 'Win_pct', 'DWS', 'reb_g', 'pts_g', 'WS', 'name']]
 
 for column in log_2df:
     if not column == 'name':
@@ -53,10 +53,11 @@ log_2df = log_2df.dropna()
 
 # filter out WS that were negative as the model needs positive valeus
 log_2df = log_2df[log_2df['WS'] > 0]
+log_2df = log_2df[log_2df['DWS'] > 0]
 
 print (log_2df)
 
-y, X = pa.dmatrices('MVP ~ AST_pct + Win_pct + reb_g + pts_g + WS'
+y, X = pa.dmatrices('MVP ~ AST_pct + Win_pct + DWS + reb_g + pts_g + WS'
                     , log_2df, return_type="dataframe")
 
 y = np.ravel(y)
@@ -106,14 +107,14 @@ print (model.score(X, y))
 player = []
 for row in log_2df.iterrows():
     index, data = row
-    if data[6] == 'LeBron-James':
+    if data[7] == 'Kawhi-Leonard':
         player.append(data.tolist())
 
 print (player)
 
 arr = [1]
-for number in player[6][1:6]:
+for number in player[4][1:7]:
     arr.append(number)
 
-# Lebron James 2017 season -- 7.9% chance of winning MVP
+# Kawhi Leonard 2017 season -- 4.9% chance of winning MVP
 print (model.predict_proba(np.array(arr)))
