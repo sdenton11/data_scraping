@@ -70,30 +70,42 @@ def get_full_stats(link):
 
     return (full_df)
 
-# iterate through each player in the list of players to get their links
-html = urlopen("http://basketball.realgm.com/nba/players/2017")
-soup = BeautifulSoup(html, "lxml")
+total_players = {}
+total_seasons = []
 
-player_names = soup.findAll('table')
+def add_year(year):
+    # iterate through each player in the list of players to get their links
+    html = urlopen("http://basketball.realgm.com/nba/players/%s"%str(year))
+    soup = BeautifulSoup(html, "lxml")
 
-players = [player for player in player_names[0].findAll('tr')]
-print (players)
+    player_names = soup.findAll('table')
+
+    players = [player for player in player_names[0].findAll('tr')]
 
 
-links = [[a['href'] for a in players[i].findAll('a', href=True)]
-         for i in range(len(players))]
+    links = [[a['href'] for a in players[i].findAll('a', href=True)]
+             for i in range(len(players))]
 
 
-# iterate throuch each link in the links
-mvp = []
-for link in links[1:]:
-    direct = link[0]
+    # iterate throuch each link in the links
+    mvp = []
+    for link in links[1:]:
+        direct = link[0]
+        try:
+            total_players[direct] == True
 
-    df = get_full_stats(direct)
-    df['name'] = direct.split("/")[2]
-    mvp.append(df)
+        # if the player hasn't been evaluated yet
+        except KeyError:
+            total_players[direct] = True
+            df = get_full_stats(direct)
+            df['name'] = direct.split("/")[2]
+            total_seasons.append(df)
 
-mvp_df = pd.concat(mvp)
+# add all players between the two years to the inclusive dataframe
+for i in range (2000, 2017):
+    add_year(i)
+
+mvp_df = pd.concat(total_seasons)
 mvp_df = mvp_df.sort_values('MVP', ascending=False)
 
-mvp_df.to_csv('mvp_totals_2017.csv')
+mvp_df.to_csv('mvp_totals.csv')
