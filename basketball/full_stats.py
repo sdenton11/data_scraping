@@ -3,7 +3,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 def get_full_stats(link):
-    url = "http://basketball.realgm.com/" + link
+    url = "http://basketball.realgm.com" + link
     print(url)
     html = urlopen(url)
 
@@ -99,10 +99,11 @@ def add_year(year):
             total_players[direct] = True
             df = get_full_stats(direct)
             df['name'] = direct.split("/")[2]
+            df = df[df.Season != 'CAREER']
             total_seasons.append(df)
 
 # add all players between the two years to the inclusive dataframe
-for i in range (2000, 2017):
+for i in range (1980, 2017):
     add_year(i)
 
 mvp_df = pd.concat(total_seasons)
