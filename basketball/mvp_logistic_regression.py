@@ -107,14 +107,14 @@ print (model.score(X, y))
 player = []
 for row in log_2df.iterrows():
     index, data = row
-    if data[7] == 'Kawhi-Leonard':
+    if data[7] == 'James-Harden':
         player.append(data.tolist())
 
 print (player)
 
 arr = [1]
-for number in player[4][1:7]:
+for number in player[0][1:7]:
     arr.append(number)
 
-# Kawhi Leonard 2017 season -- 4.9% chance of winning MVP
+# James Harden 2017 season -- 19% chance of winning MVP
 print (model.predict_proba(np.array(arr)))
