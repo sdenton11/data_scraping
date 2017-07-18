@@ -7,12 +7,14 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.feature_selection import chi2
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
-
-df = pd.read_csv('../basketball/mvp_totals.csv',
-                        encoding='latin-1')
+import time
+import warnings
 
 # logistic regression using statsmodels
 """
+df = pd.read_csv('../basketball/mvp_totals.csv',
+                        encoding='latin-1')
+
 log_df = df[['MVP', 'AST%', 'Win %', 'TRB/G', 'PTS/G', 'WS']]
 
 print (log_df.columns.values)
@@ -35,86 +37,111 @@ print (result.summary())
 print (np.exp(result.params))
 """
 
-# logistic regression using sklearn
-# First formalize the dataframe in a way that will work
-log_2df = df[['MVP', 'AST%', 'Win %', 'DWS', 'TRB/G', 'PTS/G', 'WS', 'name']]
+def odds_of_mvp(name, season):
+    # import the dataframe of players
+    df = pd.read_csv('../basketball/mvp_totals.csv',
+                     encoding='latin-1')
 
-log_2df['AST_pct'] = log_2df['AST%']
-log_2df['Win_pct'] = log_2df['Win %']
-log_2df['reb_g'] = log_2df['TRB/G']
-log_2df['pts_g'] = log_2df['PTS/G']
+    # logistic regression using sklearn
+    # First formalize the dataframe in a way that will work
+    log_2df = df[['MVP', 'AST%', 'Win %', 'DWS', 'OWS',
+                  'TRB%', 'PTS/G', 'WS', 'name', 'Season']]
 
-log_2df = log_2df[['MVP', 'AST_pct', 'Win_pct', 'DWS', 'reb_g', 'pts_g', 'WS', 'name']]
+    log_2df['ast_pct'] = log_2df['AST%']
+    log_2df['Win_pct'] = log_2df['Win %']
+    log_2df['reb_pct'] = log_2df['TRB%']
+    log_2df['pts_g'] = log_2df['PTS/G']
 
-for column in log_2df:
-    if not column == 'name':
-        log_2df[column] = pd.to_numeric(log_2df[column], errors='coerce')
-log_2df = log_2df.dropna()
+    log_2df = log_2df[['MVP', 'ast_pct', 'Win_pct', 'DWS', 'OWS',
+                       'reb_pct', 'pts_g', 'WS', 'name', 'Season']]
 
-# filter out WS that were negative as the model needs positive valeus
-log_2df = log_2df[log_2df['WS'] > 0]
-log_2df = log_2df[log_2df['DWS'] > 0]
+    # convert the columns to numeric
+    for column in log_2df:
+        if not column == 'name' and not column == 'Season':
+            log_2df[column] = pd.to_numeric(log_2df[column], errors='coerce')
+    log_2df = log_2df.dropna()
 
-print (log_2df)
+    # filter out WS that were negative as the model needs positive valeus
+    log_2df = log_2df[log_2df['WS'] > 0]
+    log_2df = log_2df[log_2df['DWS'] > 0]
+    log_2df = log_2df[log_2df['OWS'] > 0]
 
-y, X = pa.dmatrices('MVP ~ AST_pct + Win_pct + DWS + reb_g + pts_g + WS'
-                    , log_2df, return_type="dataframe")
+    y, X = pa.dmatrices('MVP ~ ast_pct + Win_pct + DWS + OWS + reb_pct'
+                        ' + pts_g + WS'
+                        , log_2df, return_type="dataframe")
 
-y = np.ravel(y)
+    y = np.ravel(y)
 
-model = LogisticRegression()
-model = model.fit(X, y)
+    model = LogisticRegression()
+    model = model.fit(X, y)
 
-# check the accuracy on the training set
-(model.score(X, y))
+    # check the accuracy on the training set
+    (model.score(X, y))
 
-# what percentage had success?
-(y.mean())
+    # what percentage had success?
+    (y.mean())
 
-# examine the coefficients
-result = pd.DataFrame(list(zip(X.columns, np.transpose(model.coef_))))
+    # examine the coefficients
+    result = pd.DataFrame(list(zip(X.columns, np.transpose(model.coef_))))
 
-result.columns = ['Variable', 'Coefficient']
+    result.columns = ['Variable', 'Coefficient']
 
-scores, pvalues = chi2(X, y)
+    scores, pvalues = chi2(X, y)
 
-result ['p values'] = np.round(pvalues, 3)
+    result ['p values'] = np.round(pvalues, 3)
 
-result['Coefficient'] = result['Coefficient'].map(lambda x: x[0])
+    result['Coefficient'] = result['Coefficient'].map(lambda x: x[0])
 
-result.round({'Coefficient' : 3})
-
-print (result)
+    result.round({'Coefficient' : 3})
 
 
-# evaluate the model by splitting into train and test sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
-model2 = LogisticRegression()
-model2.fit(X_train, y_train)
+    # evaluate the model by splitting into train and test sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+    model2 = LogisticRegression()
+    model2.fit(X_train, y_train)
 
-# predict class labels for the test set
-predicted = model2.predict(X_test)
-print (predicted)
+    # predict class labels for the test set
+    predicted = model2.predict(X_test)
+    #print (predicted)
 
-# generate class probabilities
-probs = model2.predict_proba(X_test)
-print (probs)
+    # generate class probabilities
+    probs = model2.predict_proba(X_test)
+    #print (probs)
 
-# generate evaluation metrics
-print (metrics.accuracy_score(y_test, predicted))
-print (model.score(X, y))
+    # generate evaluation metrics
+    #print (metrics.accuracy_score(y_test, predicted))
+    #print (model.score(X, y))
 
-player = []
-for row in log_2df.iterrows():
-    index, data = row
-    if data[7] == 'Kevin-Durant':
-        player.append(data.tolist())
+    # define the player name
+    player_name = ""
+    for item in name.split():
+        player_name += item + "-"
 
-print (player)
+    player_name = player_name[:-1]
 
-arr = [1]
-for number in player[0][1:7]:
-    arr.append(number)
+    player = []
+    for row in log_2df.iterrows():
+        index, data = row
+        if data[8] == player_name:
+            if season in data[9]:
+                player.append(data.tolist())
 
-# Kevin Durant 2013-2014 season -- 49.8% chance of winning MVP
-print (model.predict_proba(np.array(arr)))
+    #print (player)
+
+    arr = [1]
+    for number in player[0][1:8]:
+        arr.append(number)
+
+    # print the name of the player and their chance of winning
+    print (name + " had a %.2f" % (model.predict_proba(np.array(arr))[0][1]*100)
+           + "% chance of winning MVP in the " + season +
+           " season.")
+    if player[0][0] == 1:
+        print ("In the " + season + " season, " + name + " won MVP.")
+    else:
+        print ("In the " + season + " season, " + name + " didn't win MVP.")
+
+# ignore the warnings because they work fine
+warnings.filterwarnings("ignore")
+
+odds_of_mvp("Kareem Abdul Jabbar", "1973-74")
