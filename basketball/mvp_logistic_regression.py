@@ -144,4 +144,7 @@ def odds_of_mvp(name, season):
 # ignore the warnings because they work fine
 warnings.filterwarnings("ignore")
 
-odds_of_mvp("Kareem Abdul Jabbar", "1973-74")
+# get the player and the year
+name = input('Please enter a player name (full name with capital letters where applicable): ')
+year = input('Please enter a season they played in (formatted 1990-91): ')
+odds_of_mvp(name, year)
