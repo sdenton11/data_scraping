@@ -44,17 +44,16 @@ def odds_of_mvp_with_normal_stats(name, season):
 
     # logistic regression using sklearn
     # First formalize the dataframe in a way that will work
-    log_2df = df[['MVP', 'AST/G', 'Win %', 'DWS', 'OWS',
-                  'TRB/G', 'PTS/G', 'TOV/G', 'WS', 'name', 'Season']]
+    log_2df = df[['MVP', 'AST%', 'Win %', 'DWS', 'OWS',
+                  'TRB/G', 'PTS/G', 'WS', 'name', 'Season']]
 
-    log_2df['ast_g'] = log_2df['AST/G']
+    log_2df['ast_pct'] = log_2df['AST%']
     log_2df['Win_pct'] = log_2df['Win %']
     log_2df['reb_g'] = log_2df['TRB/G']
     log_2df['pts_g'] = log_2df['PTS/G']
-    log_2df['tov_g'] = log_2df['TOV/G']
 
-    log_2df = log_2df[['MVP', 'ast_g', 'Win_pct', 'DWS', 'OWS',
-                       'reb_g', 'pts_g', 'tov_g', 'WS', 'name', 'Season']]
+    log_2df = log_2df[['MVP', 'ast_pct', 'Win_pct', 'DWS', 'OWS',
+                       'reb_g', 'pts_g', 'WS', 'name', 'Season']]
 
     # convert the columns to numeric
     for column in log_2df:
@@ -63,12 +62,34 @@ def odds_of_mvp_with_normal_stats(name, season):
     log_2df = log_2df.dropna()
 
     # filter out WS that were negative as the model needs positive valeus
-    log_2df = log_2df[log_2df['WS'] > 0]
-    log_2df = log_2df[log_2df['DWS'] > 0]
-    log_2df = log_2df[log_2df['OWS'] > 0]
+    log_2df['WS'] = log_2df['WS'].map(lambda x: 0 if x < 0 else x)
+    log_2df['DWS'] = log_2df['DWS'].map(lambda x: 0 if x < 0 else x)
+    log_2df['OWS'] = log_2df['OWS'].map(lambda x: 0 if x < 0 else x)
 
-    y, X = pa.dmatrices('MVP ~ ast_g + Win_pct + DWS + OWS + reb_g'
-                        ' + pts_g + tov_g + WS'
+    # define the player name
+    player_name = ""
+    for item in name.split():
+        player_name += item + "-"
+
+    player_name = player_name[:-1]
+
+    player = []
+    for index, row in log_2df.iterrows():
+        if row[8] == player_name:
+            if season in row[9]:
+                player.append(row.tolist())
+                # drop the player's season from the df
+                # so it's not trained on it
+                log_2df.drop(index, inplace=True)
+
+    #print (player)
+
+    arr = [1]
+    for number in player[0][1:8]:
+        arr.append(number)
+
+    y, X = pa.dmatrices('MVP ~ ast_pct + Win_pct + DWS + OWS + reb_g'
+                        ' + pts_g + WS'
                         , log_2df, return_type="dataframe")
 
     y = np.ravel(y)
@@ -112,27 +133,7 @@ def odds_of_mvp_with_normal_stats(name, season):
 
     # generate evaluation metrics
     #print (metrics.accuracy_score(y_test, predicted))
-    print (model.score(X, y))
-
-    # define the player name
-    player_name = ""
-    for item in name.split():
-        player_name += item + "-"
-
-    player_name = player_name[:-1]
-
-    player = []
-    for row in log_2df.iterrows():
-        index, data = row
-        if data[9] == player_name:
-            if season in data[10]:
-                player.append(data.tolist())
-
-    #print (player)
-
-    arr = [1]
-    for number in player[0][1:9]:
-        arr.append(number)
+    print (model2.score(X, y))
 
     # print the name of the player and their chance of winning
     print (name + " had a %.2f" % (model.predict_proba(np.array(arr))[0][1]*100)
@@ -164,9 +165,31 @@ def odds_of_mvp_advanced(name, season):
     log_2df = log_2df.dropna()
 
     # filter out WS that were negative as the model needs positive valeus
-    log_2df = log_2df[log_2df['WS'] > 0]
-    log_2df = log_2df[log_2df['DWS'] > 0]
-    log_2df = log_2df[log_2df['OWS'] > 0]
+    log_2df['WS'] = log_2df['WS'].map(lambda x: 0 if x < 0 else x)
+    log_2df['DWS'] = log_2df['DWS'].map(lambda x: 0 if x < 0 else x)
+    log_2df['OWS'] = log_2df['OWS'].map(lambda x: 0 if x < 0 else x)
+
+    # define the player name
+    player_name = ""
+    for item in name.split():
+        player_name += item + "-"
+
+    player_name = player_name[:-1]
+
+    player = []
+    for index, row in log_2df.iterrows():
+        if row[5] == player_name:
+            if season in row[6]:
+                player.append(row.tolist())
+                # drop the player's season from the df
+                # so it's not trained on it
+                log_2df.drop(index, inplace=True)
+
+    #print(player)
+
+    arr = [1]
+    for number in player[0][1:5]:
+        arr.append(number)
 
     y, X = pa.dmatrices('MVP ~ Win_pct + DWS + OWS '
                         ' + WS'
@@ -214,26 +237,6 @@ def odds_of_mvp_advanced(name, season):
     # generate evaluation metrics
     # print (metrics.accuracy_score(y_test, predicted))
     print (model.score(X, y))
-
-    # define the player name
-    player_name = ""
-    for item in name.split():
-        player_name += item + "-"
-
-    player_name = player_name[:-1]
-
-    player = []
-    for row in log_2df.iterrows():
-        index, data = row
-        if data[5] == player_name:
-            if season in data[6]:
-                player.append(data.tolist())
-
-    # print (player)
-
-    arr = [1]
-    for number in player[0][1:5]:
-        arr.append(number)
 
     # print the name of the player and their chance of winning
     print(name + " had a %.2f" % (model.predict_proba(np.array(arr))[0][1] * 100)
