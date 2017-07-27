@@ -247,6 +247,6 @@ warnings.filterwarnings("ignore")
 
 # get the player and the year
 name = input('Please enter a player name (full name with capital letters where applicable): ')
-year = input('Please enter a season they played in (formatted 1990-91): ')
+year = input('Please enter a season he played in (formatted 1990-91): ')
 odds_of_mvp_with_normal_stats(name, year)
 odds_of_mvp_advanced(name, year)
