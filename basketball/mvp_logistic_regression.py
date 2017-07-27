@@ -70,7 +70,7 @@ def odds_of_mvp_with_normal_stats(name, season):
 
     player = []
     for index, row in log_2df.iterrows():
-        if row[8] == player_name:
+        if row[8].lower() == player_name.lower():
             if season in row[9]:
                 player.append(row.tolist())
                 # drop the player's season from the df
@@ -173,7 +173,7 @@ def odds_of_mvp_advanced(name, season):
 
     player = []
     for index, row in log_2df.iterrows():
-        if row[5] == player_name:
+        if row[5].lower() == player_name.lower():
             if season in row[6]:
                 player.append(row.tolist())
                 # drop the player's season from the df
@@ -231,7 +231,7 @@ def odds_of_mvp_advanced(name, season):
 
     # generate evaluation metrics
     # print (metrics.accuracy_score(y_test, predicted))
-    print (model.score(X, y))
+    # print (model.score(X, y))
 
     # print the name of the player and their chance of winning
     print(name + " had a %.2f" % (model.predict_proba(np.array(arr))[0][1] * 100)
@@ -242,11 +242,42 @@ def odds_of_mvp_advanced(name, season):
     else:
         print("In the " + season + " season, " + name + " didn't win MVP.")
 
+def format_years(input):
+    years = input.split("-")
+    if len(years) == 1:
+        if len(years[0]) == 2:
+            years.append("20" + str(int(years[0]) - 1))
+            years[0] = "20" + years[0]
+        else:
+            years.append(str(int(years[0]) - 1))
+        tmp = years[1]
+        years[1] = years[0][2:]
+        years[0] = tmp
+        return "-".join(years)
+    elif len(years) == 2:
+        if len(years[0]) == 2:
+            years[0] = "20" + years[0]
+        if len(years[1]) == 4:
+            years[1] = years[1][2:]
+        return "-".join(years)
+    else:
+        return (" ")
+
 # ignore the warnings because they work fine
 warnings.filterwarnings("ignore")
 
 # get the player and the year
-name = input('Please enter a player name (full name with capital letters where applicable): ')
-year = input('Please enter a season he played in (formatted 1990-91): ')
-odds_of_mvp_with_normal_stats(name, year)
-odds_of_mvp_advanced(name, year)
+name = input('Please enter a player name: ')
+
+year = input('Please enter a season he played in: ')
+
+# edit the year to be formatted correctly
+year = format_years(year)
+print ("In the " + year + " season...")
+
+#odds_of_mvp_with_normal_stats(name, year)
+
+try:
+    odds_of_mvp_advanced(name, year)
+except:
+    print ("Sorry, invalid name and/or year. Please try again.")
