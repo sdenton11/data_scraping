@@ -12,8 +12,7 @@ import warnings
 
 # logistic regression using statsmodels
 """
-df = pd.read_csv('../basketball/mvp_totals.csv',
-                        encoding='latin-1')
+df = pd.read_csv('mvp_totals.csv', encoding='latin-1')
 
 log_df = df[['MVP', 'AST%', 'Win %', 'TRB/G', 'PTS/G', 'WS']]
 
