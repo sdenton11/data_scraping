@@ -1,13 +1,9 @@
 import numpy as np
 import pandas as pd
-import statsmodels as sm
-import matplotlib.pyplot as plt
 import patsy as pa
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_selection import chi2
 from sklearn.model_selection import train_test_split
-from sklearn import metrics
-import time
 import warnings
 
 # logistic regression using statsmodels
